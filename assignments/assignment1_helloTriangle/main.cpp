@@ -29,6 +29,8 @@ const char* fragmentShaderSource = R"(
 	}
 )";
 
+unsigned int createVAO(float* vertexData, int numVertices);
+
 int main() {
 	printf("Initializing...");
 
@@ -77,7 +79,6 @@ int main() {
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
 
-	//unsigned int createVAO(float* vertexData, int numVertices);
 
 
 	//Create new vertex shader and compile
@@ -145,3 +146,21 @@ int main() {
 	}
 	printf("Shutting down...");
 }
+
+/*
+unsigned int createVAO(float* vertexData, int numVertices)
+{
+	unsigned int vao;
+	
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	//Pull data from vbo
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	//Define position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)0);
+	glEnableVertexAttribArray(0);
+	//Define color
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+}
+*/
