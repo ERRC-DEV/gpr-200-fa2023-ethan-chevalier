@@ -6,5 +6,5 @@ out vec2 UV;
 void main(){
 	UV = vUV;
 	float displacement = sin(_time);
-	gl_Position = vec4(((vPos.x+displacement)/2),(vPos.y/2),(vPos.z/2),1.0);
+	gl_Position = vec4(((vPos.x+displacement)/2),(vPos.yz/2),1.0);
 }
