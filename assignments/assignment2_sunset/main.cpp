@@ -37,10 +37,10 @@ unsigned int indices[6] = {
 
 Vertex vertices[4] = {
 	//x    y    z    u    v
-   { -0.5, -0.5, 0.0, 0, 0 }, //Bottom left
-   { 0.5, -0.5, 0.0, 1, 0 }, //Bottom right
-   { 0.5, 0.5, 0.0, 1, 1 },  //Top right
-   { -0.5, 0.5, 0.0, 0, 1 }  //Top left
+   { -1, -1, 0.0, 0, 0 }, //Bottom left
+   { 1, -1, 0.0, 1, 0 }, //Bottom right
+   { 1, 1, 0.0, 1, 1 },  //Top right
+   { -1, 1, 0.0, 0, 1 }  //Top left
 };
 
 
@@ -92,10 +92,13 @@ int main() {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		float time = (float)glfwGetTime();
 
 		//Set uniforms
 		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
 		shader.setFloat("_Brightness", triangleBrightness);
+		shader.setVec3("iResolution", SCREEN_WIDTH, SCREEN_HEIGHT, 0.0);
+		shader.setFloat("iTime", time);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
