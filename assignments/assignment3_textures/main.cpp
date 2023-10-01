@@ -87,13 +87,15 @@ int main() {
 		//bindQuadVAO();
 		//glBind
 		
+		float time = (float)glfwGetTime();
 
 		//Draw background
 		backgroundShader.use();
 		unsigned int canyonTexture = loadTexture("assets/canyon-cliffs-1.jpg", GL_REPEAT, GL_LINEAR);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, canyonTexture);
-		shader.setInt("_CanyonTexture", 0);
+		backgroundShader.setInt("_CanyonTexture", 0);
+		backgroundShader.setFloat("_time", time);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		//Draw character
@@ -101,7 +103,8 @@ int main() {
 		unsigned int charTexture = loadTexture("assets/ditto.png", GL_REPEAT, GL_LINEAR);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, charTexture);
-		shader.setInt("_CharacterTexture", 1);
+		charShader.setInt("_CharacterTexture", 1);
+		charShader.setFloat("_time", time);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		//Render UI
