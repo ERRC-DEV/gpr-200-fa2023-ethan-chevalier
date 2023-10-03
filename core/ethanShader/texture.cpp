@@ -49,6 +49,7 @@ unsigned int loadTexture(const char* filePath, int wrapMode, int filterMode) {
 		break;
 	default:
 		exit(1);
+		break;
 	}
 	switch (filterMode)
 	{
@@ -59,6 +60,9 @@ unsigned int loadTexture(const char* filePath, int wrapMode, int filterMode) {
 	case GL_NEAREST:
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		break;
+	default:
+		exit(1);
 		break;
 	}
 
