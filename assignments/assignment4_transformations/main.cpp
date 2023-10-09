@@ -11,13 +11,14 @@
 #include <ew/shader.h>
 #include <ew/ewMath/vec3.h>
 #include <ew/procGen.h>
+#include <ethanShader/transformations.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Square aspect ratio for now. We will account for this with projection later.
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
-
+const int NUM_CUBES = 4;
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -55,6 +56,8 @@ int main() {
 	
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
+	ethanShader::Transform transform[4];
+
 	
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -66,7 +69,13 @@ int main() {
 		shader.use();
 
 		//TODO: Set model matrix uniform
-
+		shader.setMat4("_Model", transform[0].getModelMatrix());
+		cubeMesh.draw();
+		shader.setMat4("_Model", transform[1].getModelMatrix());
+		cubeMesh.draw();
+		shader.setMat4("_Model", transform[2].getModelMatrix());
+		cubeMesh.draw();
+		shader.setMat4("_Model", transform[3].getModelMatrix());
 		cubeMesh.draw();
 
 		//Render UI
@@ -76,6 +85,16 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Transform");
+			for (size_t i = 0; i < NUM_CUBES; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Transform")) {
+					ImGui::DragFloat3("Position", &transform[i].position.x, 0.05f);
+					ImGui::DragFloat3("Rotation", &transform[i].rotation.x, 0.05f);
+					ImGui::DragFloat3("Scale", &transform[i].scale.x, 0.05f);
+				}
+				ImGui::PopID();
+			}
 			ImGui::End();
 
 			ImGui::Render();
