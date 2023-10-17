@@ -11,6 +11,8 @@
 #include <ew/shader.h>
 #include <ew/procGen.h>
 #include <ew/transform.h>
+#include <ethanShader/camera.h>
+
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -20,6 +22,7 @@ const int SCREEN_HEIGHT = 720;
 
 const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
+ethanShader::Camera camera;
 
 int main() {
 	printf("Initializing...");
@@ -66,6 +69,16 @@ int main() {
 		cubeTransforms[i].position.y = i / (NUM_CUBES / 2) - 0.5;
 	}
 
+	camera.position = ew::Vec3(0, 0, 5); //We will be looking down the -Z axis!
+	camera.target = ew::Vec3(0, 0, 0);
+	camera.fov = 60;
+	camera.orthoSize = 6;
+	camera.nearPlane = 0.1;
+	camera.farPlane = 100;
+	camera.orthographic = false;
+
+
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -82,6 +95,10 @@ int main() {
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
 			cubeMesh.draw();
 		}
+
+		shader.setMat4("_View", camera.ViewMatrix());
+		//shader.setMat4("_Project", camera.ProjectionMatrix());
+		shader.setMat4("_Project", ew::IdentityMatrix());
 
 		//Render UI
 		{
@@ -102,6 +119,9 @@ int main() {
 				ImGui::PopID();
 			}
 			ImGui::Text("Camera");
+			//ImGui::DragFloat3("Position", camera.position, 0.05f);
+			//ImGui::DragFloat3("Rotation", &cubeTransforms[i].rotation.x, 1.0f);
+			//ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
 			ImGui::End();
 			
 			ImGui::Render();
