@@ -85,19 +85,28 @@ namespace ethanShader {
 		ew::Vec3 yaxis = ew::Cross(xaxis, zaxis);
 
 		zaxis*=-1;
-
+		/*
 		ew::Mat4 viewMatrix = {
 		  ew::Vec4(xaxis.x, xaxis.y, xaxis.z, -ew::Dot(xaxis, eye)),
 		  ew::Vec4(yaxis.x, yaxis.y, yaxis.z, -ew::Dot(yaxis, eye)),
 		  ew::Vec4(zaxis.x, zaxis.y, zaxis.z, -ew::Dot(zaxis, eye)),
 		  ew::Vec4(0, 0, 0, 1)
 		};
+		*/
+
+		///*
+		ew::Mat4 viewMatrix = {
+		  ew::Vec4(xaxis.x, yaxis.x, zaxis.x, 0),
+		  ew::Vec4(xaxis.y, yaxis.y, zaxis.y, 0),
+		  ew::Vec4(xaxis.z, yaxis.z, zaxis.z, 0),
+		  ew::Vec4(-ew::Dot(xaxis, eye), -ew::Dot(yaxis, eye), -ew::Dot(zaxis, eye), 1)
+		};
+		//*/
+
 		return viewMatrix;
 	};
 	//Orthographic projection
 	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
-		//...
-		/*
 		float left = -height * aspect * 0.5;
 		float right = height * aspect * 0.5;
 		float bottom = -height * 0.5;
@@ -116,15 +125,13 @@ namespace ethanShader {
 			0, 0, z, tz,
 			0, 0, 0, 1
 		);
-		*/
-		glm::ortho(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
 	};
 	//Perspective projection
 	//fov = vertical aspect ratio (radians)
 	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
-		//...
-		/*
-		float tanHalfFov = tan(fov / 2);
+		float radFov = ((fov / 180) * ew::PI);
+		float tanHalfFov = tan(radFov / 2);
 
 		float x = 1.0 / (aspect * tanHalfFov);
 		float y = 1.0 / tanHalfFov;
@@ -137,9 +144,6 @@ namespace ethanShader {
 			0, 0, z, t,
 			0, 0, -1, 0
 		);
-		*/
-
-		//glm::perspective();
 	};
 
 	

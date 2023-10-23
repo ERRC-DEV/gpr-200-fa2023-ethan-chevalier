@@ -13,8 +13,11 @@
 #include <ew/transform.h>
 #include <ethanShader/camera.h>
 
+//for debugging
+#include <iostream>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void moveCamera(GLFWwindow* window, ethanShader::Camera* camera, ethanShader::CameraControls* controls, float deltaTime);
 
 //Projection will account for aspect ratio!
 const int SCREEN_WIDTH = 1080;
@@ -23,6 +26,7 @@ const int SCREEN_HEIGHT = 720;
 const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
 ethanShader::Camera camera;
+ethanShader::CameraControls controls;
 
 int main() {
 	printf("Initializing...");
@@ -76,14 +80,19 @@ int main() {
 	camera.nearPlane = 0.1;
 	camera.farPlane = 100;
 	camera.orthographic = false;
+	camera.aspectRatio = static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT);
 
 
-
+	float prevTime = 0.0;
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		float time = (float)glfwGetTime(); //Timestamp of current frame
+		float deltaTime = time - prevTime;
+		prevTime = time;
+		moveCamera(window, &camera, &controls, deltaTime); 
 
 		//Set uniforms
 		shader.use();
@@ -97,8 +106,9 @@ int main() {
 		}
 
 		shader.setMat4("_View", camera.ViewMatrix());
-		//shader.setMat4("_Project", camera.ProjectionMatrix());
-		shader.setMat4("_Project", ew::IdentityMatrix());
+		shader.setMat4("_Project", camera.ProjectionMatrix());
+
+		
 
 		//Render UI
 		{
@@ -119,9 +129,15 @@ int main() {
 				ImGui::PopID();
 			}
 			ImGui::Text("Camera");
-			//ImGui::DragFloat3("Position", camera.position, 0.05f);
-			//ImGui::DragFloat3("Rotation", &cubeTransforms[i].rotation.x, 1.0f);
-			//ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
+			ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
+			ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
+			ImGui::Checkbox("Orthographic", &camera.orthographic);
+			ImGui::DragFloat("Ortho Height", &camera.orthoSize, 0.05f);
+			ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
+			ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
+			ImGui::DragFloat("FOV", &camera.fov, 1.0f);
+
+			//ImGui::Button("Reset", &camera.position, ew::Vec3(0, 0, 5));
 			ImGui::End();
 			
 			ImGui::Render();
@@ -138,3 +154,92 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+void moveCamera(GLFWwindow* window, ethanShader::Camera* camera, ethanShader::CameraControls* controls, float deltaTime)
+{
+	if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+		//Release cursor
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		controls->firstMouse = true;
+		return;
+	}
+	//GLFW_CURSOR_DISABLED hides the cursor, but the position will still be changed as we move our mouse.
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//Get screen mouse position this frame
+	double mouseX, mouseY;
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+	//If we just started right clicking, set prevMouse values to current position.
+	//This prevents a bug where the camera moves as soon as we click.
+	if (controls->firstMouse) {
+		controls->firstMouse = false;
+		controls->prevMouseX = mouseX;
+		controls->prevMouseY = mouseY;
+	}
+	//Get mouse position delta for this frame
+	double mouseDeltaX, mouseDeltaY;
+	mouseDeltaX = mouseX - controls->prevMouseX;
+	mouseDeltaY = mouseY - controls->prevMouseY;
+	//Add to yaw and pitch
+	controls->yaw += (mouseDeltaX) * controls->mouseSensitivity;
+	controls->pitch -= (mouseDeltaY) * controls->mouseSensitivity;
+	//Clamp pitch between -89 and 89 degrees
+	if (controls->pitch <= -89)
+	{
+		controls->pitch = -89;
+		std::cout << "clamp lower";
+	}
+	if (controls->pitch >= 89)
+	{
+		controls->pitch = 89;
+		std::cout << "clamp upper";
+	}
+	double radPitch = ew::Radians(controls->pitch);
+	double radYaw = ew::Radians(controls->yaw);
+
+	double vecX, vecY, vecZ;
+	vecX = sin(controls->yaw) * cos(controls->pitch);
+	vecY = sin(controls->pitch);
+	vecZ = -cos(controls->yaw) * cos(controls->pitch);
+
+	ew::Vec3 forward = ew::Vec3(vecX, vecY, vecZ);
+	ew::Normalize(forward);
+	ew::Vec3 right = ew::Cross(forward,ew::Vec3(0,1,0));
+	ew::Normalize(right);
+	ew::Vec3 up = ew::Cross(right, forward);
+	ew::Normalize(up);
+
+	//Remember previous mouse position
+	controls->prevMouseX = mouseX;
+	controls->prevMouseY = mouseY;
+
+	if (glfwGetKey(window, GLFW_KEY_W)) {
+		camera->position += forward * controls->moveSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S)) {
+		camera->position -= forward * controls->moveSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D)) {
+		camera->position += right * controls->moveSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A)) {
+		camera->position -= right * controls->moveSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+		camera->position += up * controls->moveSpeed * deltaTime;
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
+		camera->position -= up * controls->moveSpeed * deltaTime;
+	}
+
+	//OPTIONAL SPRINT FUNCTIONALITY WHILE HOLDING LEFT SHIFT
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+		controls->moveSpeed = 5.0f;
+	}
+	if (!glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+		controls->moveSpeed = 2.5f;
+	}
+
+	//Setting camera.target should be done after changing position. Otherwise, it will use camera.position from the previous frame and lag behind
+	camera->target = camera->position + forward;
+
+
+}
