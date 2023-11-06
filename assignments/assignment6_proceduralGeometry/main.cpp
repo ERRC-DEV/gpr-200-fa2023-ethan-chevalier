@@ -15,6 +15,9 @@
 #include <ew/camera.h>
 #include <ew/cameraController.h>
 
+#include <../core/ethanShader/procGen.h>
+#include <../core/ethanShader/procGen.cpp>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 
@@ -81,9 +84,22 @@ int main() {
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
+	ew::MeshData planeMeshData = ethanShader::createPlane(1,1,5);
+	ew::Mesh planeMesh(planeMeshData);
+	ew::MeshData sphereMeshData = ethanShader::createSphere(0.5f, 64);
+	ew::Mesh sphereMesh(sphereMeshData);
+	ew::MeshData barrelMeshData = ethanShader::createCylinder(1.0f, 0.5f, 10);
+	ew::Mesh barrelMesh(barrelMeshData);
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
+	ew::Transform planeTransform;
+	ew::Transform sphereTransform;
+	ew::Transform barrelTransform;
+
+	planeTransform.position = ew::Vec3(1,-0.25,0.5);
+	sphereTransform.position = ew::Vec3(-1, 0, 0);
+	barrelTransform.position = ew::Vec3(-3, 0, 0);
 
 	resetCamera(camera,cameraController);
 
@@ -120,6 +136,18 @@ int main() {
 		//Draw cube
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		//Draw plane
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		//Draw sphere
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		//Draw cylinder
+		shader.setMat4("_Model", barrelTransform.getModelMatrix());
+		barrelMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		//Render UI
 		{
