@@ -27,6 +27,19 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
+struct Light {
+	ew::Vec3 position; //World space
+	ew::Vec3 color; //RGB
+};
+
+struct Material {
+	float ambientK; //Ambient coefficient (0-1)
+	float diffuseK; //Diffuse coefficient (0-1)
+	float specular; //Specular coefficient (0-1)
+	float shininess; //Shininess
+};
+
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -97,6 +110,7 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		//shader.setFloat("_Properties.)
 
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
@@ -112,6 +126,7 @@ int main() {
 		cylinderMesh.draw();
 
 		//TODO: Render point lights
+
 
 		//Render UI
 		{
